@@ -1,6 +1,10 @@
-# PaperMind
+<p align="center">
+  <img src="docs/images/banner.svg" alt="PaperMind Banner" width="900" />
+</p>
 
-**Intelligent PDF OCR client powered by MinerU**
+<h1 align="center">PaperMind</h1>
+
+<p align="center"><em>Intelligent PDF OCR client powered by MinerU</em></p>
 
 <p align="center">
   <img src="https://img.shields.io/badge/Python-3.8+-3776AB?style=for-the-badge&logo=python&logoColor=white" />
@@ -264,66 +268,96 @@ See `requirements.txt` for full dependency list.
 
 ---
 
-<h2 id="中文说明">🇨🇳 中文说明</h2>
+---
 
-### 项目简介
+<h2 align="center" id="中文说明">中文说明</h2>
 
-**PaperMind** 是一个基于 **MinerU OCR SDK** 的 PDF 智能提取工具，将学术论文、试卷、教材等文档转为结构化的 Markdown 文本。
+<p align="center"><em>PaperMind — 基于 MinerU 的 PDF 智能提取桌面工具</em></p>
 
-与简单的 OCR 工具不同，PaperMind 能够处理：
+### 项目背景
 
-- **数学公式** → 转为 LaTeX 格式
-- **表格** → 结构化 Markdown 表格
-- **多栏排版** → 正确的阅读顺序
-- **混合内容** → 清晰的 Markdown 输出
+学术论文、试卷和教材中大量存在数学公式、复杂表格和多栏排版，这些内容是普通 OCR 工具的弱项。PaperMind 基于 **MinerU SDK** 专门处理这类结构化文档，输出可以直接被下游 LLM 处理的干净 Markdown + LaTeX。
 
-### 核心特性
+---
 
-| 特性 | 说明 |
+### 核心能力
+
+| 能力 | 说明 |
 |------|------|
-| **MinerU 集成** | 基于 MinerU SDK 的高精度文档分析 |
-| **LaTeX 输出** | 数学公式转为 LaTeX，兼容下游 LLM 处理 |
-| **批量处理** | 支持多文件队列处理 |
-| **结构保留** | 保持原文档的层级和布局 |
-| **PyQt5 界面** | 友好的桌面应用，支持拖拽上传 |
-| **Markdown 导出** | 导出为可编辑的 Markdown 文件 |
+| **公式感知 OCR** | 数学公式自动转为 LaTeX（`$\frac{1}{2}$`），不丢失语义 |
+| **表格识别** | 表格转为标准 Markdown 表格语法 |
+| **多栏排版** | 正确还原阅读顺序，不混行 |
+| **批量队列** | 多个 PDF 文件排队顺序处理，结果统一收集 |
+| **PyQt5 桌面界面** | 拖拽上传，无需命令行，操作直观 |
+| **Markdown 导出** | 输出可直接编辑的 `.md` 文件 |
 
-### 快速开始
+---
+
+### 为什么 LaTeX 输出很重要
+
+PaperMind 的输出直接进入 [EduAgent](https://github.com/HongdiHe/edu-agent) 的质检节点。EduAgent 用代码阈值判断 OCR 质量，而不是让 LLM 自评。如果公式格式错误（比如 `E=mc²` 而不是 `$E=mc^2$`），质检会打低分，触发 OCR 修正回环，浪费额外的 LLM 调用。PaperMind 在源头输出标准 LaTeX，可以显著减少下游纠错。
+
+---
+
+### 快速启动
 
 ```bash
 git clone https://github.com/HongdiHe/papermind.git
 cd papermind
-
 pip install -r requirements.txt
-
 python main.py
 ```
 
-### 在系统中的角色
+启动后，将 PDF 文件拖入界面即可开始处理。
 
-PaperMind 作为教育内容处理流水线的 OCR 前端：
-
-```
-PDF 文档 → PaperMind (OCR) → EduForge (编辑审核) → EduAgent (AI 质检)
-```
-
-输出的 LaTeX 格式直接对接 [EduAgent](https://github.com/HongdiHe/edu-agent) 的质检流水线，确保公式精度。
-
-相关项目：
-- [EduForge](https://github.com/HongdiHe/eduforge) — 内容编辑器
-- [EduAgent](https://github.com/HongdiHe/edu-agent) — AI 质检引擎
-
-### 配置说明
+配置说明：
 
 ```yaml
 # .env 或 config.yaml
 mineru.api_key: 你的API密钥
-mineru.model_version: vlm      # 模型版本
+mineru.model_version: vlm      # 视觉语言模型版本
 mineru.timeout: 300            # 请求超时（秒）
 mineru.poll_interval: 5        # 轮询间隔（秒）
 ```
 
-获取 MinerU API 密钥，请访问 [mineru.net](https://mineru.net)。
+获取 MinerU API 密钥：[mineru.net](https://mineru.net)
+
+---
+
+### 处理流水线
+
+```
+用户拖入 PDF
+    ↓
+PyQt5 UI（队列管理 + 进度展示）
+    ↓
+MinerU SDK API 调用
+    ↓ 并行识别
+  ├─ 文本段落      → 原样保留
+  ├─ 数学公式      → 转为 LaTeX
+  ├─ 表格          → 转为 Markdown 表格
+  └─ 多栏排版      → 还原正确阅读顺序
+    ↓
+内容聚合 → 输出 .md 文件
+```
+
+---
+
+### 在系统中的角色
+
+PaperMind 是整个教育内容生产链路的最前端入口：
+
+| 组件 | 职责 | 关系 |
+|------|------|------|
+| **PaperMind** | PDF → Markdown + LaTeX | 本仓库 |
+| [EduForge](https://github.com/HongdiHe/eduforge) | 内容生产管控平台 | 接收 PaperMind 输出，人工编辑审核 |
+| [EduAgent](https://github.com/HongdiHe/edu-agent) | AI 质检引擎 | 对 OCR 结果做质检和改写 |
+
+---
+
+### 中文架构图
+
+见 `docs/images/banner.zh.excalidraw`（用 [excalidraw.com](https://excalidraw.com) 打开）。
 
 ---
 
