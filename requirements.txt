@@ -1,0 +1,22 @@
+# GUI Framework
+PyQt5>=5.15.9
+PyQtWebEngine>=5.15.6
+
+# Markdown Processing
+markdown>=3.5.0
+markdown-it-py>=3.0.0
+pygments>=2.16.0
+
+# Image Processing
+Pillow>=10.0.0
+
+# HTTP Requests
+requests>=2.31.0
+httpx>=0.25.0
+
+# Utilities
+python-dotenv>=1.0.0
+PyYAML>=6.0.1
+
+# LaTeX/Math Support (optional)
+# sympy>=1.12
